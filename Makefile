@@ -7,7 +7,7 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 
 run: all
-	./bin/client
+	./bin/client_static
 
 clean:
 	$(MAKE) -C src clean

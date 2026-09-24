@@ -1,2 +1,4 @@
 obj/*.o
 bin/client
+bin/client_static
+lib/*.a
