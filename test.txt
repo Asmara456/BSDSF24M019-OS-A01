@@ -1,0 +1,4 @@
+Hello World
+Linux is an operating system
+I am learning Linux and C
+Makefiles are useful
