@@ -2,3 +2,5 @@ obj/*.o
 bin/client
 bin/client_static
 lib/*.a
+bin/client_dynamic
+lib/*.so
