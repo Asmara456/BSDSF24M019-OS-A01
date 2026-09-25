@@ -35,3 +35,19 @@ ranlib builds an index of the symbols (function and variable names) inside the a
 ## Q3. When you run nm on client_static, are symbols like mystrlen present? What does this tell you?
 
 Yes, functions like mystrlen appear in `nm bin/client_static` with the type T (defined, in the text/code section), the same as they appear in the original mystrfunctions.o. This shows that static linking physically copies the actual machine code of the used functions from the library into the final executable at link time. The executable is then fully self-contained and does not depend on libmyutils.a being present anywhere at run time.
+
+# Feature-4: Dynamic Library
+
+## Q1. What is Position-Independent Code (-fPIC) and why is it needed for shared libraries?
+
+Position-Independent Code is machine code that works correctly no matter what memory address it gets loaded at. A shared library is loaded into a different address in every program that uses it, and often even at a different address each time the same program runs (due to address space layout randomization). Without -fPIC, the code would contain fixed, absolute memory addresses that only work if the library is loaded at one specific location, which is not guaranteed. -fPIC makes the compiler generate code that uses relative addressing instead, so the same compiled .so file can be safely loaded at any address in any process.
+
+## Q2. Explain the file size difference between the static and dynamic clients.
+
+client_static contains its own copy of the compiled code for mystrlen, mystrcpy, wordCount, mygrep and the other library functions, because static linking copies that code directly into the executable at link time. client_dynamic does not contain this code at all, it only contains a small reference saying "load libmyutils.so and use these functions from it at run time." This is why client_dynamic is significantly smaller: it doesn't carry a private copy of the library's machine code.
+
+## Q3. What is LD_LIBRARY_PATH? Why was it necessary, and what does it tell you about the dynamic loader?
+
+LD_LIBRARY_PATH is an environment variable that tells the operating system's dynamic loader (ld.so) which extra directories to search for shared libraries at program start-up, in addition to the standard system locations (like /lib and /usr/lib). It was necessary here because libmyutils.so was never installed into one of those standard system paths, it only exists inside this project's own lib/ folder, so the loader had no way to find it without being told where to look.
+
+This shows that dynamic linking is a two-step process: the executable only records that it needs "libmyutils.so" by name, and the actual job of locating, loading, and connecting that file into the running program is entirely the responsibility of the OS's dynamic loader at run time, not something resolved once and for all when the program was compiled.
