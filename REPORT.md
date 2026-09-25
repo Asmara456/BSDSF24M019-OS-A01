@@ -17,3 +17,21 @@ A simple (lightweight) tag is just a name pointing to a commit and stores no ext
 A GitHub Release packages a specific tag into an official, downloadable version of the project, with a title, release notes and attached files. It gives users a clear list of stable versions and lets them download one without cloning the repository or looking through commits.
 
 Attaching the compiled binary (`client`) means users can download and run the program directly without needing a compiler or having to run `make`. It also keeps the compiled file out of the git repository (build outputs are ignored in `.gitignore`), while still keeping a copy of the exact build for each version.
+
+# Feature-3: Static Library
+
+## Q1. Compare the Makefile from Part 2 and Part 3. Key differences?
+
+Part 2's Makefile compiles all three .c files directly and links them into one executable with `$(CC) $(OBJECTS) -o $@`, where OBJECTS includes main.o along with the library object files.
+
+Part 3 splits this: the library source files (mystrfunctions.c, myfilefunctions.c) are compiled and archived into libmyutils.a using `$(AR) rc $@ $(LIB_OBJS)` followed by `ranlib`. The final executable is then linked from only main.o plus the library, using `-L../lib -lmyutils`, instead of listing every object file directly. New variables appear: AR, STATIC_LIB, LIBDIR and LIBNAME, and the linking rule now depends on the archive file rather than on all the object files together.
+
+## Q2. What is the purpose of ar? Why is ranlib often used after it?
+
+ar (archiver) bundles multiple object files into a single archive file, which is what a static library (.a file) actually is. It doesn't compile or link code, it just packages already-compiled object files together.
+
+ranlib builds an index of the symbols (function and variable names) inside the archive. Without this index, the linker would have to scan through every object file in the archive in order each time it looks for a symbol, and depending on the order files were added, it might even fail to find symbols that appear "later" in the archive. ranlib lets the linker jump straight to the right object file.
+
+## Q3. When you run nm on client_static, are symbols like mystrlen present? What does this tell you?
+
+Yes, functions like mystrlen appear in `nm bin/client_static` with the type T (defined, in the text/code section), the same as they appear in the original mystrfunctions.o. This shows that static linking physically copies the actual machine code of the used functions from the library into the final executable at link time. The executable is then fully self-contained and does not depend on libmyutils.a being present anywhere at run time.
